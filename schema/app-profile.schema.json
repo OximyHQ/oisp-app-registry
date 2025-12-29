@@ -1,0 +1,264 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://oisp.dev/schema/app-profile.schema.json",
+  "title": "OISP App Profile",
+  "description": "Schema for AI-enabled application profiles in the OISP App Registry",
+  "type": "object",
+  "required": ["app_id", "name", "category", "signatures"],
+  "properties": {
+    "app_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique identifier for the app (lowercase, hyphens allowed)",
+      "examples": ["cursor", "github-copilot", "chatgpt-desktop"]
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name",
+      "examples": ["Cursor", "GitHub Copilot", "ChatGPT"]
+    },
+    "vendor": {
+      "type": "string",
+      "description": "Company or individual that develops the app",
+      "examples": ["Anysphere Inc.", "GitHub", "OpenAI"]
+    },
+    "category": {
+      "type": "string",
+      "enum": ["dev_tools", "productivity", "chat", "creative", "cli", "browser", "enterprise", "other"],
+      "description": "Primary category of the application"
+    },
+    "subcategory": {
+      "type": "string",
+      "description": "More specific categorization",
+      "examples": ["ide", "code_completion", "writing_assistant"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Brief description of what the app does"
+    },
+    "website": {
+      "type": "string",
+      "format": "uri",
+      "description": "Official website URL"
+    },
+    "signatures": {
+      "type": "object",
+      "description": "Platform-specific identification signatures",
+      "properties": {
+        "macos": {
+          "$ref": "#/$defs/macosSignature"
+        },
+        "windows": {
+          "$ref": "#/$defs/windowsSignature"
+        },
+        "linux": {
+          "$ref": "#/$defs/linuxSignature"
+        }
+      },
+      "minProperties": 1
+    },
+    "traffic_patterns": {
+      "type": "object",
+      "description": "Expected AI traffic patterns for this app",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["direct", "backend", "hybrid"],
+          "description": "How the app communicates with AI providers"
+        },
+        "expected_providers": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "AI providers this app is known to use",
+          "examples": [["openai", "anthropic"]]
+        },
+        "expected_models": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Specific models this app commonly uses"
+        },
+        "backend_domains": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "For backend/hybrid apps, the domains that proxy AI requests"
+        },
+        "typical_usage": {
+          "type": "object",
+          "properties": {
+            "requests_per_hour": {
+              "type": "object",
+              "properties": {
+                "min": { "type": "integer" },
+                "max": { "type": "integer" },
+                "typical": { "type": "integer" }
+              }
+            },
+            "tokens_per_request": {
+              "type": "object",
+              "properties": {
+                "min": { "type": "integer" },
+                "max": { "type": "integer" },
+                "typical": { "type": "integer" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "child_processes": {
+      "type": "array",
+      "description": "Known child processes that may make AI requests on behalf of this app",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Process name pattern"
+          },
+          "path_pattern": {
+            "type": "string",
+            "description": "Path pattern to match"
+          },
+          "role": {
+            "type": "string",
+            "description": "What this child process does",
+            "examples": ["renderer", "extension_host", "language_server"]
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "icon_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "first_release": {
+          "type": "string",
+          "format": "date"
+        },
+        "ai_features_added": {
+          "type": "string",
+          "format": "date"
+        },
+        "open_source": {
+          "type": "boolean"
+        },
+        "license": {
+          "type": "string"
+        },
+        "pricing": {
+          "type": "string",
+          "enum": ["free", "freemium", "paid", "enterprise"]
+        }
+      }
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes about this app's AI integration"
+    },
+    "last_verified": {
+      "type": "string",
+      "format": "date",
+      "description": "Date when this profile was last verified accurate"
+    }
+  },
+  "$defs": {
+    "macosSignature": {
+      "type": "object",
+      "description": "macOS-specific identification",
+      "properties": {
+        "bundle_id": {
+          "type": "string",
+          "description": "CFBundleIdentifier from Info.plist",
+          "examples": ["com.todesktop.230313mzl4w4u92", "com.microsoft.VSCode"]
+        },
+        "bundle_id_patterns": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Regex patterns for bundle IDs (for apps with dynamic IDs)"
+        },
+        "team_id": {
+          "type": "string",
+          "description": "Apple Developer Team ID from code signature",
+          "pattern": "^[A-Z0-9]{10}$"
+        },
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Common installation paths",
+          "examples": [["/Applications/Cursor.app", "~/Applications/Cursor.app"]]
+        },
+        "executable_name": {
+          "type": "string",
+          "description": "Name of the main executable"
+        },
+        "helper_bundles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Bundle IDs of helper apps that should be attributed to this app"
+        }
+      }
+    },
+    "windowsSignature": {
+      "type": "object",
+      "description": "Windows-specific identification",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Common installation paths (supports %LOCALAPPDATA%, %PROGRAMFILES%, etc.)"
+        },
+        "executable_name": {
+          "type": "string",
+          "description": "Name of the main executable (e.g., 'Cursor.exe')"
+        },
+        "publisher": {
+          "type": "string",
+          "description": "Publisher name from Authenticode signature"
+        },
+        "product_name": {
+          "type": "string",
+          "description": "Product name from file version info"
+        },
+        "msix_package_family": {
+          "type": "string",
+          "description": "MSIX package family name for Store apps"
+        }
+      }
+    },
+    "linuxSignature": {
+      "type": "object",
+      "description": "Linux-specific identification",
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Common installation paths"
+        },
+        "executable_name": {
+          "type": "string",
+          "description": "Name of the main executable"
+        },
+        "package_names": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Package names in various package managers"
+        },
+        "desktop_file": {
+          "type": "string",
+          "description": "Name of the .desktop file"
+        },
+        "flatpak_id": {
+          "type": "string",
+          "description": "Flatpak application ID"
+        },
+        "snap_name": {
+          "type": "string",
+          "description": "Snap package name"
+        }
+      }
+    }
+  }
+}

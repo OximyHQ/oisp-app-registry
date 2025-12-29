@@ -1,0 +1,40 @@
+# Apple Safari - Web browser
+# https://apple.com/safari
+
+app_id: safari
+name: Safari
+vendor: Apple Inc.
+category: browser
+subcategory: web_browser
+description: Apple's native web browser - identifies web apps via Origin/Referer headers.
+website: https://apple.com/safari
+
+signatures:
+  macos:
+    bundle_id: "com.apple.Safari"
+    team_id: "Apple Inc."  # System app, signed by Apple
+    paths:
+      - "/Applications/Safari.app"
+      - "/System/Applications/Safari.app"
+    executable_name: "Safari"
+    helper_bundles:
+      - "com.apple.WebKit.WebContent"
+      - "com.apple.WebKit.Networking"
+      - "com.apple.WebKit.GPU"
+
+traffic_patterns:
+  type: browser
+  extracts_web_context: true
+
+is_browser: true
+
+metadata:
+  website: https://apple.com/safari
+  open_source: false  # WebKit is open source, Safari is not
+  pricing: free
+
+notes: |
+  Safari is only available on macOS and iOS. Network requests may appear
+  from WebKit helper processes rather than the main Safari process.
+
+last_verified: "2025-01-15"

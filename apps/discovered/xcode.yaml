@@ -1,0 +1,21 @@
+# Xcode
+# Discovered from: /Applications/Xcode.app
+
+app_id: xcode
+name: "Xcode"
+vendor: "Apple Inc"
+category: dev_tools
+
+signatures:
+  macos:
+    bundle_id: "com.apple.dt.Xcode"
+    team_id: "59GAB85EFG"
+    paths:
+      - "/Applications/Xcode.app"
+    executable_name: "Xcode"
+
+metadata:
+  discovered_at: "2025-12-29T13:41:29.644424"
+  version_discovered: "16.2"
+  is_ai_host: true
+  icon: "xcode.png"

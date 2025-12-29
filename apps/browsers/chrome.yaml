@@ -1,0 +1,58 @@
+# Google Chrome - Web browser
+# https://google.com/chrome
+
+app_id: chrome
+name: Google Chrome
+vendor: Google LLC
+category: browser
+subcategory: web_browser
+description: Google's web browser - identifies web apps via Origin/Referer headers.
+website: https://google.com/chrome
+
+signatures:
+  macos:
+    bundle_id: "com.google.Chrome"
+    team_id: "EQHXZ8M8AV"
+    paths:
+      - "/Applications/Google Chrome.app"
+      - "~/Applications/Google Chrome.app"
+    executable_name: "Google Chrome"
+    helper_bundles:
+      - "com.google.Chrome.helper"
+      - "com.google.Chrome.helper.GPU"
+      - "com.google.Chrome.helper.Renderer"
+
+  windows:
+    paths:
+      - "%PROGRAMFILES%\\Google\\Chrome\\Application\\chrome.exe"
+      - "%PROGRAMFILES(X86)%\\Google\\Chrome\\Application\\chrome.exe"
+      - "%LOCALAPPDATA%\\Google\\Chrome\\Application\\chrome.exe"
+    executable_name: "chrome.exe"
+    publisher: "Google LLC"
+    product_name: "Google Chrome"
+
+  linux:
+    paths:
+      - "/usr/bin/google-chrome"
+      - "/usr/bin/google-chrome-stable"
+      - "/opt/google/chrome/chrome"
+      - "/snap/chromium/current/usr/lib/chromium-browser/chrome"
+    executable_name: "chrome"
+    package_names:
+      - "google-chrome-stable"
+      - "chromium-browser"
+    desktop_file: "google-chrome.desktop"
+
+traffic_patterns:
+  type: browser
+  # Browser traffic requires web_context extraction
+  extracts_web_context: true
+
+is_browser: true
+
+metadata:
+  website: https://google.com/chrome
+  open_source: false
+  pricing: free
+
+last_verified: "2025-01-15"

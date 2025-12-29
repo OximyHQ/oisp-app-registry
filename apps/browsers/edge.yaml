@@ -1,0 +1,54 @@
+# Microsoft Edge - Web browser
+# https://microsoft.com/edge
+
+app_id: edge
+name: Microsoft Edge
+vendor: Microsoft Corporation
+category: browser
+subcategory: web_browser
+description: Microsoft's Chromium-based browser - identifies web apps via Origin/Referer headers.
+website: https://microsoft.com/edge
+
+signatures:
+  macos:
+    bundle_id: "com.microsoft.edgemac"
+    team_id: "UBF8T346G9"
+    paths:
+      - "/Applications/Microsoft Edge.app"
+      - "~/Applications/Microsoft Edge.app"
+    executable_name: "Microsoft Edge"
+    helper_bundles:
+      - "com.microsoft.edgemac.helper"
+      - "com.microsoft.edgemac.helper.GPU"
+      - "com.microsoft.edgemac.helper.Renderer"
+
+  windows:
+    paths:
+      - "%PROGRAMFILES%\\Microsoft\\Edge\\Application\\msedge.exe"
+      - "%PROGRAMFILES(X86)%\\Microsoft\\Edge\\Application\\msedge.exe"
+    executable_name: "msedge.exe"
+    publisher: "Microsoft Corporation"
+    product_name: "Microsoft Edge"
+
+  linux:
+    paths:
+      - "/usr/bin/microsoft-edge"
+      - "/usr/bin/microsoft-edge-stable"
+      - "/opt/microsoft/msedge/msedge"
+    executable_name: "msedge"
+    package_names:
+      - "microsoft-edge-stable"
+    desktop_file: "microsoft-edge.desktop"
+
+traffic_patterns:
+  type: browser
+  extracts_web_context: true
+
+is_browser: true
+
+metadata:
+  website: https://microsoft.com/edge
+  open_source: false
+  pricing: free
+
+last_verified: "2025-01-15"

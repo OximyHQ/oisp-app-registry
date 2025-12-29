@@ -1,0 +1,91 @@
+# Cursor - AI-first code editor
+# https://cursor.com
+
+app_id: cursor
+name: Cursor
+vendor: Anysphere Inc.
+category: dev_tools
+subcategory: ide
+description: AI-first code editor built on VSCode with deep AI integration for code completion, chat, and editing.
+website: https://cursor.com
+
+signatures:
+  macos:
+    bundle_id: "com.todesktop.230313mzl4w4u92"
+    team_id: "VDXQ22DGB9"  # Verified via codesign
+    paths:
+      - "/Applications/Cursor.app"
+      - "~/Applications/Cursor.app"
+    executable_name: "Cursor"
+    helper_bundles:
+      - "com.todesktop.230313mzl4w4u92.helper"
+      - "com.todesktop.230313mzl4w4u92.helper.GPU"
+      - "com.todesktop.230313mzl4w4u92.helper.Renderer"
+
+  windows:
+    paths:
+      - "%LOCALAPPDATA%\\Programs\\cursor\\Cursor.exe"
+      - "%LOCALAPPDATA%\\cursor\\Cursor.exe"
+    executable_name: "Cursor.exe"
+    publisher: "Anysphere Inc."
+    product_name: "Cursor"
+
+  linux:
+    paths:
+      - "/opt/Cursor/cursor"
+      - "/usr/share/cursor/cursor"
+      - "~/.local/share/cursor/cursor"
+      - "/snap/cursor/current/cursor"
+    executable_name: "cursor"
+    package_names:
+      - "cursor"
+    snap_name: "cursor"
+    desktop_file: "cursor.desktop"
+
+traffic_patterns:
+  type: direct
+  expected_providers:
+    - openai
+    - anthropic
+    - google
+  expected_models:
+    - gpt-4
+    - gpt-4-turbo
+    - gpt-4o
+    - gpt-4o-mini
+    - claude-3-5-sonnet
+    - claude-3-opus
+    - claude-3-haiku
+  typical_usage:
+    requests_per_hour:
+      min: 10
+      max: 500
+      typical: 50
+    tokens_per_request:
+      min: 100
+      max: 32000
+      typical: 2000
+
+child_processes:
+  - name: "Cursor Helper"
+    path_pattern: "**/Cursor.app/Contents/Frameworks/*Helper*"
+    role: renderer
+  - name: "node"
+    path_pattern: "**/Cursor.app/**/node"
+    role: extension_host
+
+metadata:
+  website: https://cursor.com
+  first_release: "2023-03-01"
+  ai_features_added: "2023-03-01"
+  open_source: false
+  pricing: freemium
+
+notes: |
+  Cursor is a fork of VSCode with native AI integration. It makes direct API calls
+  to OpenAI, Anthropic, and other providers. Users can configure their own API keys
+  or use Cursor's built-in subscription which proxies through Cursor's servers.
+  When using Cursor Pro, requests may go through api.cursor.sh before reaching the
+  AI provider.
+
+last_verified: "2025-01-15"

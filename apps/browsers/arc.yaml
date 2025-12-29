@@ -1,0 +1,43 @@
+# Arc Browser - Web browser
+# https://arc.net
+
+app_id: arc
+name: Arc
+vendor: The Browser Company
+category: browser
+subcategory: web_browser
+description: Modern Chromium-based browser by The Browser Company - identifies web apps via Origin/Referer headers.
+website: https://arc.net
+
+signatures:
+  macos:
+    bundle_id: "company.thebrowser.Browser"
+    team_id: "S6N382Y83G"
+    paths:
+      - "/Applications/Arc.app"
+      - "~/Applications/Arc.app"
+    executable_name: "Arc"
+    helper_bundles:
+      - "company.thebrowser.Browser.helper"
+      - "company.thebrowser.Browser.helper.GPU"
+      - "company.thebrowser.Browser.helper.Renderer"
+
+  windows:
+    paths:
+      - "%LOCALAPPDATA%\\Arc\\Application\\Arc.exe"
+    executable_name: "Arc.exe"
+    publisher: "The Browser Company"
+    product_name: "Arc"
+
+traffic_patterns:
+  type: browser
+  extracts_web_context: true
+
+is_browser: true
+
+metadata:
+  website: https://arc.net
+  open_source: false
+  pricing: free
+
+last_verified: "2025-01-15"
