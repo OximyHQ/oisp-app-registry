@@ -84,4 +84,4 @@ Process matching:
 
 ## License
 
-Apache 2.0
+MIT
