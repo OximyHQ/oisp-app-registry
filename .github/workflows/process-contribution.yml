@@ -1,0 +1,141 @@
+name: Process Contribution
+
+on:
+  pull_request:
+    paths:
+      - 'contributions/*.zip'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyyaml
+
+      - name: Process ZIP contributions
+        run: |
+          python3 << 'EOF'
+          import zipfile
+          import yaml
+          import os
+          import sys
+          from pathlib import Path
+
+          contributions_dir = Path('contributions')
+          apps_dir = Path('apps')
+          icons_dir = Path('icons')
+
+          apps_dir.mkdir(exist_ok=True)
+          icons_dir.mkdir(exist_ok=True)
+
+          required_fields = ['id', 'name', 'signatures']
+          valid_ai = ['native', 'enabled', 'host', 'none']
+
+          errors = []
+          processed_apps = []
+          processed_icons = []
+
+          for zip_path in contributions_dir.glob('*.zip'):
+              print(f"Processing {zip_path}...")
+
+              try:
+                  with zipfile.ZipFile(zip_path, 'r') as zf:
+                      for name in zf.namelist():
+                          # Skip directories and README
+                          if name.endswith('/') or name == 'README.md':
+                              continue
+
+                          # Process YAML files from apps/ folder
+                          if name.startswith('apps/') and name.endswith('.yaml'):
+                              content = zf.read(name).decode('utf-8')
+                              try:
+                                  app = yaml.safe_load(content)
+
+                                  # Validate required fields
+                                  for field in required_fields:
+                                      if field not in app:
+                                          errors.append(f"{name}: missing required field '{field}'")
+                                          continue
+
+                                  # Validate AI status
+                                  if 'ai' in app and app['ai'] not in valid_ai:
+                                      errors.append(f"{name}: invalid ai status '{app['ai']}'")
+                                      continue
+
+                                  # Validate signatures
+                                  if 'signatures' in app:
+                                      sigs = app['signatures']
+                                      if not isinstance(sigs, dict):
+                                          errors.append(f"{name}: signatures must be an object")
+                                          continue
+                                      if not any(k in sigs for k in ['macos', 'windows', 'linux']):
+                                          errors.append(f"{name}: signatures must have at least one platform")
+                                          continue
+
+                                  # Write to apps/
+                                  filename = os.path.basename(name)
+                                  dest = apps_dir / filename
+                                  dest.write_text(content)
+                                  processed_apps.append(filename)
+
+                              except yaml.YAMLError as e:
+                                  errors.append(f"{name}: invalid YAML - {e}")
+
+                          # Process icons from icons/ folder
+                          elif name.startswith('icons/') and name.endswith('.png'):
+                              content = zf.read(name)
+                              filename = os.path.basename(name)
+                              dest = icons_dir / filename
+                              dest.write_bytes(content)
+                              processed_icons.append(filename)
+
+              except zipfile.BadZipFile:
+                  errors.append(f"{zip_path}: not a valid ZIP file")
+
+          # Remove processed ZIP files
+          for zip_path in contributions_dir.glob('*.zip'):
+              zip_path.unlink()
+              print(f"Removed {zip_path}")
+
+          # Report results
+          print(f"\nProcessed {len(processed_apps)} apps and {len(processed_icons)} icons")
+
+          if errors:
+              print("\nValidation errors:")
+              for e in errors:
+                  print(f"  - {e}")
+              sys.exit(1)
+
+          if not processed_apps:
+              print("No valid apps found in contribution")
+              sys.exit(1)
+
+          # Write summary for commit message
+          with open('/tmp/summary.txt', 'w') as f:
+              f.write(f"{len(processed_apps)} apps, {len(processed_icons)} icons")
+          EOF
+
+      - name: Commit extracted files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          SUMMARY=$(cat /tmp/summary.txt)
+
+          git add apps/ icons/ contributions/
+          git diff --staged --quiet || git commit -m "Extract contribution: $SUMMARY"
+          git push

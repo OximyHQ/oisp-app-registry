@@ -14,21 +14,16 @@ This will:
 1. Scan all installed apps on your machine
 2. Open a web UI in your browser
 3. Let you mark apps as AI-native, AI-enabled, etc.
-4. Download YAML files + app icons to your Downloads folder
-5. Give you a link to create a PR
+4. Export a single ZIP file with all apps + icons
+5. Upload the ZIP to GitHub → bot extracts and creates PR
 
 ## Structure
 
 ```
 oisp-app-registry/
 ├── apps/              # App profiles (YAML)
-│   ├── cursor.yaml
-│   ├── claude-desktop.yaml
-│   └── ...
 ├── icons/             # App icons (PNG)
-│   ├── cursor.png
-│   ├── claude-desktop.png
-│   └── ...
+├── contributions/     # Drop ZIP files here for auto-processing
 ├── apps.json          # Combined JSON (auto-generated)
 ├── scan.sh            # Scanner entry point
 └── scripts/
@@ -83,6 +78,7 @@ Process matching:
 
 ## GitHub Actions
 
+- **On ZIP upload**: Extracts apps + icons, validates, commits to PR
 - **On PR**: Validates YAML structure and checks for duplicate IDs
 - **On merge**: Auto-regenerates `apps.json`
 

@@ -493,8 +493,8 @@
     <button class="btn btn-success btn-large" id="export-btn">
       Export ZIP
     </button>
-    <a href="https://github.com/oximyhq/oisp-app-registry/upload/main/apps" target="_blank" class="btn btn-primary" id="upload-link">
-      Upload to GitHub
+    <a href="https://github.com/oximyhq/oisp-app-registry/upload/main/contributions" target="_blank" class="btn btn-primary" id="upload-link">
+      Upload ZIP to GitHub
     </a>
   </div>
 
@@ -778,18 +778,12 @@
 
 This ZIP contains ${includedApps.length} app profiles and ${iconCount} icons.
 
-## Quick Submit (GitHub Web UI)
+## How to Submit
 
-1. Go to: https://github.com/oximyhq/oisp-app-registry/upload/main/apps
-2. Drag & drop all files from the \`apps/\` folder
-3. Click "Commit changes" -> "Propose changes" -> "Create pull request"
-4. Repeat for \`icons/\` folder at: https://github.com/oximyhq/oisp-app-registry/upload/main/icons
-
-## Notes
-
-- If an app already exists in the registry, your version will update it
-- Duplicate apps across PRs are handled by maintainers during review
-- The GitHub Actions will validate your YAML files automatically
+1. Go to: https://github.com/oximyhq/oisp-app-registry/upload/main/contributions
+2. Upload this ZIP file (oisp-contribution.zip)
+3. Click "Propose changes" to create a Pull Request
+4. Our bot will automatically extract and validate your apps!
 
 Thank you for contributing!
 `;
