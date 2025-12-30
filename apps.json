@@ -1,0 +1,105 @@
+{
+  "version": "1.0.0",
+  "apps": [
+    {
+      "id": "chatgpt-desktop",
+      "name": "ChatGPT",
+      "vendor": "OpenAI",
+      "ai": "native",
+      "signatures": {
+        "macos": {
+          "bundle_id": "com.openai.chat",
+          "team_id": "QH8AA5B8F3"
+        },
+        "windows": {
+          "exe": "ChatGPT.exe",
+          "publisher": "OpenAI"
+        }
+      },
+      "providers": [
+        "openai"
+      ]
+    },
+    {
+      "id": "claude-desktop",
+      "name": "Claude",
+      "vendor": "Anthropic",
+      "ai": "native",
+      "signatures": {
+        "macos": {
+          "bundle_id": "com.anthropic.claudefordesktop",
+          "team_id": "QH4Y54N6Z6"
+        },
+        "windows": {
+          "exe": "Claude.exe",
+          "publisher": "Anthropic PBC"
+        }
+      },
+      "providers": [
+        "anthropic"
+      ]
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "vendor": "Anysphere Inc.",
+      "ai": "native",
+      "signatures": {
+        "macos": {
+          "bundle_id": "com.todesktop.230313mzl4w4u92",
+          "team_id": "VDXQ22DGB9"
+        },
+        "windows": {
+          "exe": "Cursor.exe",
+          "publisher": "Anysphere Inc."
+        },
+        "linux": {
+          "exe": "cursor"
+        }
+      },
+      "providers": [
+        "openai",
+        "anthropic"
+      ]
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "vendor": "GitHub (Microsoft)",
+      "ai": "native",
+      "signatures": {
+        "macos": {
+          "bundle_id": "com.microsoft.VSCode"
+        },
+        "windows": {
+          "exe": "copilot-agent.exe"
+        },
+        "linux": {
+          "exe": "copilot-agent"
+        }
+      },
+      "providers": [
+        "openai"
+      ]
+    },
+    {
+      "id": "vscode",
+      "name": "Visual Studio Code",
+      "vendor": "Microsoft",
+      "ai": "host",
+      "signatures": {
+        "macos": {
+          "bundle_id": "com.microsoft.VSCode",
+          "team_id": "UBF8T346G9"
+        },
+        "windows": {
+          "exe": "Code.exe",
+          "publisher": "Microsoft Corporation"
+        },
+        "linux": {
+          "exe": "code"
+        }
+      }
+    }
+  ]
+}

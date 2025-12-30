@@ -1,62 +1,90 @@
 # OISP App Registry
 
-The official registry of AI-enabled applications for the OISP ecosystem.
+Community-driven registry of AI-enabled applications.
 
-## Purpose
+## Contribute Your Apps
 
-This registry enables the OISP Sensor to identify which application is making AI requests. Without app identification, you only see "OpenAI traffic." With it, you see "Cursor made 47 requests, GitHub Copilot made 23."
+**One command:**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/oximyhq/oisp-app-registry/main/scan.sh | bash
+```
+
+This will:
+1. Scan all installed apps on your machine
+2. Open a web UI in your browser
+3. Let you mark apps as AI-native, AI-enabled, etc.
+4. Download YAML files + app icons to your Downloads folder
+5. Give you a link to create a PR
 
 ## Structure
 
 ```
 oisp-app-registry/
-├── apps/                    # Individual app profiles (YAML)
+├── apps/              # App profiles (YAML)
 │   ├── cursor.yaml
-│   ├── github-copilot.yaml
+│   ├── claude-desktop.yaml
 │   └── ...
-├── schema/                  # JSON Schema for validation
-│   └── app-profile.schema.json
-├── scripts/                 # Build and validation scripts
-│   └── build-bundle.py
-├── generated/               # Generated bundle for sensor consumption
-│   └── apps-bundle.json
-└── registry.yaml            # Master index of all apps
+├── icons/             # App icons (PNG)
+│   ├── cursor.png
+│   ├── claude-desktop.png
+│   └── ...
+├── apps.json          # Combined JSON (auto-generated)
+├── scan.sh            # Scanner entry point
+└── scripts/
+    ├── discover-apps.py  # App discovery
+    ├── viewer.html       # Web UI
+    └── build.py          # Generate apps.json
 ```
 
-## App Profile Schema
+## App Format
 
-Each app profile contains:
+```yaml
+id: cursor
+name: Cursor
+vendor: Anysphere Inc.
+ai: native
 
-- **Identification**: App ID, name, vendor, category
-- **Signatures**: Platform-specific identifiers (bundle ID, paths, code signatures)
-- **Traffic Patterns**: Expected AI providers, direct vs backend patterns
-- **Metadata**: Website, documentation, icon
+signatures:
+  macos:
+    bundle_id: com.todesktop.230313mzl4w4u92
+    team_id: VDXQ22DGB9
+  windows:
+    exe: Cursor.exe
+  linux:
+    exe: cursor
 
-## Three-Tier Classification
+providers:
+  - openai
+  - anthropic
+```
 
-| Tier | Name | Description |
-|------|------|-------------|
-| 0 | Unknown | Process found, no app match. Suspicious by default. |
-| 1 | Identified | Matched by signature. Basic metadata available. |
-| 2 | Profiled | Full profile with expected behavior. Baseline for anomaly detection. |
+## AI Status
 
-## Categories
+| Status | Description |
+|--------|-------------|
+| `native` | Built for AI (Cursor, ChatGPT, Claude) |
+| `enabled` | Has AI features (Notion AI, Raycast) |
+| `host` | Hosts AI extensions (VS Code, browsers) |
+| `none` | No AI features |
 
-- `dev_tools` - IDEs, code editors, coding assistants
-- `productivity` - Note-taking, writing, office tools
-- `chat` - Conversational AI interfaces
-- `creative` - Image, video, audio generation
-- `cli` - Command-line tools
-- `browser` - Browser extensions
-- `enterprise` - Business/enterprise applications
+## Sensor Integration
 
-## Contributing
+The sensor fetches `apps.json` on startup:
 
-To add a new app:
+```
+https://raw.githubusercontent.com/oximyhq/oisp-app-registry/main/apps.json
+```
 
-1. Create `apps/<app-id>.yaml` following the schema
-2. Run `scripts/validate.py` to check your profile
-3. Submit a pull request
+Process matching:
+- **macOS**: `bundle_id` + `team_id`
+- **Windows**: `exe` + `publisher`
+- **Linux**: `exe`
+
+## GitHub Actions
+
+- **On PR**: Validates YAML structure and checks for duplicate IDs
+- **On merge**: Auto-regenerates `apps.json`
 
 ## License
 

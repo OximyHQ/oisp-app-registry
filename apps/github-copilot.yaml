@@ -1,78 +1,16 @@
-# GitHub Copilot - AI pair programmer
-# https://github.com/features/copilot
-
-app_id: github-copilot
+id: github-copilot
 name: GitHub Copilot
 vendor: GitHub (Microsoft)
-category: dev_tools
-subcategory: code_completion
-description: AI pair programmer that provides code suggestions and completions directly in your editor.
-website: https://github.com/features/copilot
+ai: native
 
+# Copilot runs as extension, match the agent process
 signatures:
   macos:
-    # Copilot runs as a VSCode/JetBrains extension, not standalone app
-    # These are the extension host processes
-    bundle_id_patterns:
-      - "^com\\.microsoft\\.VSCode$"
-      - "^com\\.jetbrains\\..+"
-    paths:
-      - "~/.vscode/extensions/github.copilot-*/dist/extension.js"
-      - "~/.vscode-insiders/extensions/github.copilot-*/dist/extension.js"
-      - "~/Library/Application Support/JetBrains/*/plugins/github-copilot/copilot-agent"
-    executable_name: "copilot-agent"
-
+    bundle_id: com.microsoft.VSCode  # runs inside VSCode
   windows:
-    paths:
-      - "%USERPROFILE%\\.vscode\\extensions\\github.copilot-*\\dist\\extension.js"
-      - "%USERPROFILE%\\.vscode-insiders\\extensions\\github.copilot-*\\dist\\extension.js"
-      - "%APPDATA%\\JetBrains\\*\\plugins\\github-copilot\\copilot-agent.exe"
-    executable_name: "copilot-agent.exe"
-
+    exe: copilot-agent.exe
   linux:
-    paths:
-      - "~/.vscode/extensions/github.copilot-*/dist/extension.js"
-      - "~/.vscode-server/extensions/github.copilot-*/dist/extension.js"
-      - "~/.local/share/JetBrains/*/plugins/github-copilot/copilot-agent"
-    executable_name: "copilot-agent"
+    exe: copilot-agent
 
-traffic_patterns:
-  type: backend
-  expected_providers:
-    - openai  # Backend provider (not directly visible)
-  backend_domains:
-    - "api.githubcopilot.com"
-    - "copilot-proxy.githubusercontent.com"
-    - "*.github.com"
-  typical_usage:
-    requests_per_hour:
-      min: 50
-      max: 2000
-      typical: 200
-    tokens_per_request:
-      min: 50
-      max: 8000
-      typical: 500
-
-child_processes:
-  - name: "copilot-agent"
-    path_pattern: "**/github.copilot-*/copilot-agent*"
-    role: language_server
-  - name: "node"
-    path_pattern: "**/github.copilot-*/node*"
-    role: runtime
-
-metadata:
-  first_release: "2021-06-29"
-  ai_features_added: "2021-06-29"
-  open_source: false
-  pricing: paid
-
-notes: |
-  GitHub Copilot operates as an extension within VSCode, JetBrains IDEs, Neovim, and other editors.
-  It communicates through GitHub's proxy servers (api.githubcopilot.com) rather than directly
-  to OpenAI. The actual process making network calls is typically the copilot-agent binary
-  or node running the extension code. Attribution requires walking up the process tree to
-  find the parent IDE.
-
-last_verified: "2025-01-15"
+providers:
+  - openai  # via api.githubcopilot.com

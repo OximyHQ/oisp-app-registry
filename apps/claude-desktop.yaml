@@ -1,85 +1,15 @@
-# Claude Desktop - Official Anthropic desktop app
-# https://claude.ai/download
-
-app_id: claude-desktop
+id: claude-desktop
 name: Claude
 vendor: Anthropic
-category: chat
-subcategory: ai_assistant
-description: Official desktop application for Claude with MCP (Model Context Protocol) support and system integration.
-website: https://claude.ai
+ai: native
 
 signatures:
   macos:
-    bundle_id: "com.anthropic.claudefordesktop"
-    team_id: "QH4Y54N6Z6"
-    paths:
-      - "/Applications/Claude.app"
-      - "~/Applications/Claude.app"
-    executable_name: "Claude"
-    helper_bundles:
-      - "com.anthropic.claudefordesktop.helper"
-
+    bundle_id: com.anthropic.claudefordesktop
+    team_id: QH4Y54N6Z6
   windows:
-    paths:
-      - "%LOCALAPPDATA%\\Programs\\claude\\Claude.exe"
-      - "%LOCALAPPDATA%\\AnthropicPBC\\Claude\\Claude.exe"
-    executable_name: "Claude.exe"
-    publisher: "Anthropic PBC"
-    product_name: "Claude"
+    exe: Claude.exe
+    publisher: Anthropic PBC
 
-  linux:
-    # No official Linux app yet, but community builds exist
-    paths:
-      - "/opt/Claude/claude"
-      - "~/.local/share/claude/claude"
-    executable_name: "claude"
-
-traffic_patterns:
-  type: direct
-  expected_providers:
-    - anthropic
-  expected_models:
-    - claude-3-5-sonnet
-    - claude-3-opus
-    - claude-3-haiku
-    - claude-3-5-haiku
-  backend_domains:
-    - "claude.ai"
-    - "api.anthropic.com"
-  typical_usage:
-    requests_per_hour:
-      min: 1
-      max: 50
-      typical: 10
-    tokens_per_request:
-      min: 100
-      max: 200000
-      typical: 2000
-
-child_processes:
-  - name: "mcp-server"
-    path_pattern: "**/mcp-server-*"
-    role: mcp_server
-  - name: "node"
-    path_pattern: "**/Claude.app/**/node"
-    role: mcp_runtime
-
-metadata:
-  first_release: "2024-10-29"
-  ai_features_added: "2024-10-29"
-  open_source: false
-  pricing: freemium
-
-notes: |
-  Claude Desktop is Anthropic's official desktop client with unique features:
-  - MCP (Model Context Protocol) support for tool integrations
-  - Local file access and computer use capabilities
-  - Project-based conversations with persistent context
-
-  MCP servers run as child processes and may make their own network calls.
-  These should be attributed back to Claude Desktop.
-
-  The app communicates directly with claude.ai and api.anthropic.com.
-
-last_verified: "2025-01-15"
+providers:
+  - anthropic

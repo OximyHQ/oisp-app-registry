@@ -83,7 +83,7 @@ class DiscoveredApp:
     discovered_at: str = field(default_factory=lambda: datetime.now().isoformat())
     machine_id: str = field(default_factory=lambda: hashlib.sha256(platform.node().encode()).hexdigest()[:12])
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self, include_icon: bool = True) -> Dict[str, Any]:
         """Convert to dictionary, removing None values"""
         d = asdict(self)
         # Clean up None values and empty signatures
@@ -93,8 +93,9 @@ class DiscoveredApp:
             d['windows'] = None
         if d.get('linux') and not any(v for v in d['linux'].values() if v):
             d['linux'] = None
-        # Don't include base64 icon in JSON by default (too large)
-        d.pop('icon_base64', None)
+        # Remove icon if not requested (for smaller JSON in apps.json)
+        if not include_icon:
+            d.pop('icon_base64', None)
         return {k: v for k, v in d.items() if v is not None}
 
 

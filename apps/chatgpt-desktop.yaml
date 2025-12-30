@@ -1,77 +1,15 @@
-# ChatGPT Desktop - Official OpenAI desktop app
-# https://openai.com/chatgpt/desktop
-
-app_id: chatgpt-desktop
+id: chatgpt-desktop
 name: ChatGPT
 vendor: OpenAI
-category: chat
-subcategory: ai_assistant
-description: Official desktop application for ChatGPT with system-wide access and advanced features.
-website: https://openai.com/chatgpt
+ai: native
 
 signatures:
   macos:
-    bundle_id: "com.openai.chat"
-    team_id: "QH8AA5B8F3"
-    paths:
-      - "/Applications/ChatGPT.app"
-      - "~/Applications/ChatGPT.app"
-    executable_name: "ChatGPT"
-    helper_bundles:
-      - "com.openai.chat.helper"
-
+    bundle_id: com.openai.chat
+    team_id: QH8AA5B8F3
   windows:
-    paths:
-      - "%LOCALAPPDATA%\\Programs\\ChatGPT\\ChatGPT.exe"
-      - "%LOCALAPPDATA%\\OpenAI\\ChatGPT\\ChatGPT.exe"
-    executable_name: "ChatGPT.exe"
-    publisher: "OpenAI"
-    product_name: "ChatGPT"
+    exe: ChatGPT.exe
+    publisher: OpenAI
 
-  linux:
-    # No official Linux app yet
-    paths: []
-
-traffic_patterns:
-  type: direct
-  expected_providers:
-    - openai
-  expected_models:
-    - gpt-4
-    - gpt-4-turbo
-    - gpt-4o
-    - gpt-4o-mini
-    - gpt-3.5-turbo
-    - o1
-    - o1-mini
-  backend_domains:
-    - "chat.openai.com"
-    - "chatgpt.com"
-    - "api.openai.com"
-  typical_usage:
-    requests_per_hour:
-      min: 1
-      max: 100
-      typical: 10
-    tokens_per_request:
-      min: 100
-      max: 128000
-      typical: 1000
-
-metadata:
-  first_release: "2024-05-13"
-  ai_features_added: "2024-05-13"
-  open_source: false
-  pricing: freemium
-
-notes: |
-  The ChatGPT desktop app provides a native interface to ChatGPT with features like:
-  - System-wide keyboard shortcut for quick access
-  - Screenshot and screen sharing capabilities
-  - Voice mode integration
-  - Persistent conversations across sessions
-
-  Traffic goes to chatgpt.com and chat.openai.com domains. The app uses OpenAI's
-  consumer APIs rather than the developer API.
-
-last_verified: "2025-01-15"
+providers:
+  - openai

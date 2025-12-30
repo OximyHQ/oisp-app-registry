@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OISP Registry Scanner</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-secondary: #141414;
+      --bg-tertiary: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #e5e5e5;
+      --text-secondary: #888;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --red: #ef4444;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--text-secondary); font-weight: 400; }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stats strong { color: var(--text); }
+
+    /* Main layout */
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      height: calc(100vh - 57px);
+    }
+
+    /* Left panel - App list */
+    .app-list {
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+    }
+
+    .filters {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { border-color: var(--text-secondary); }
+    .filter-btn.active { background: var(--bg-tertiary); color: var(--text); border-color: var(--text-secondary); }
+
+    .search {
+      flex: 1;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .search:focus { outline: none; border-color: var(--accent); }
+    .search::placeholder { color: var(--text-secondary); }
+
+    /* App item */
+    .app-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .app-item:hover { background: var(--bg-secondary); }
+    .app-item.selected { background: var(--bg-tertiary); }
+    .app-item.skipped { opacity: 0.4; }
+
+    .app-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .app-icon img {
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+      object-fit: cover;
+    }
+
+    .app-info { flex: 1; min-width: 0; }
+
+    .app-name {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .app-vendor {
+      font-size: 12px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .app-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .status-native { background: rgba(34, 197, 94, 0.15); color: var(--green); }
+    .status-enabled { background: rgba(234, 179, 8, 0.15); color: var(--yellow); }
+    .status-host { background: rgba(59, 130, 246, 0.15); color: var(--accent); }
+    .status-none { background: var(--bg-tertiary); color: var(--text-secondary); }
+    .status-skipped { background: rgba(239, 68, 68, 0.15); color: var(--red); }
+
+    /* Right panel - Detail view */
+    .detail-panel {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .detail-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-title {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .detail-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+
+    .detail-icon img {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    .detail-name { font-size: 20px; font-weight: 600; }
+    .detail-vendor { font-size: 14px; color: var(--text-secondary); }
+
+    /* Form fields */
+    .field-group {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .field-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .field-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .radio-btn {
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .radio-btn:hover { border-color: var(--text-secondary); }
+    .radio-btn.selected { background: var(--accent); border-color: var(--accent); color: white; }
+    .radio-btn.selected-skip { background: var(--red); border-color: var(--red); color: white; }
+
+    .field-input {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'SF Mono', 'Menlo', monospace;
+    }
+
+    .field-input:focus { outline: none; border-color: var(--accent); }
+
+    /* Signature display */
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .sig-label { color: var(--text-secondary); }
+    .sig-value { font-family: 'SF Mono', 'Menlo', monospace; font-size: 12px; word-break: break-all; }
+
+    /* Detail content scrollable */
+    .detail-content {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Actions */
+    .actions {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      background: var(--bg);
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-large {
+      padding: 14px 28px;
+      font-size: 15px;
+    }
+
+    .btn-secondary {
+      background: var(--bg-tertiary);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--text-secondary); }
+
+    .btn-success {
+      background: var(--green);
+      color: white;
+    }
+
+    .btn-success:hover { background: #16a34a; }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .empty-state h3 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 12px 20px;
+      background: var(--green);
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s;
+      z-index: 300;
+    }
+
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Export button bar */
+    .export-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      z-index: 100;
+    }
+
+    .export-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .export-info strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">OISP Registry <span>Scanner</span></div>
+    <div class="header-actions">
+      <div class="stats">
+        <span><strong id="total-count">0</strong> apps</span>
+        <span><strong id="include-count">0</strong> included</span>
+        <span><strong id="skipped-count">0</strong> skipped</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container" style="height: calc(100vh - 57px - 65px);">
+    <!-- Left: App list -->
+    <div class="app-list">
+      <div class="filters">
+        <input type="text" class="search" placeholder="Search apps..." id="search-input">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="ai">AI</button>
+        <button class="filter-btn" data-filter="included">Included</button>
+        <button class="filter-btn" data-filter="skipped">Skipped</button>
+      </div>
+      <div id="apps-container"></div>
+    </div>
+
+    <!-- Right: Detail panel -->
+    <div class="detail-panel">
+      <div class="empty-state" id="empty-state">
+        <h3>Select an app to edit</h3>
+        <p>Set AI status and decide which apps to include in your contribution</p>
+        <p style="margin-top: 12px; font-size: 12px;">Existing apps will be updated. New apps will be added.</p>
+      </div>
+
+      <div id="detail-view" style="display: none; flex-direction: column; height: 100%;">
+        <div class="detail-header">
+          <div class="detail-title">
+            <div class="detail-icon" id="detail-icon"></div>
+            <div>
+              <div class="detail-name" id="detail-name"></div>
+              <div class="detail-vendor" id="detail-vendor"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-content">
+          <div class="field-group">
+            <div class="field-label">Include in Export?</div>
+            <div class="field-row">
+              <button class="radio-btn" id="action-include">Include</button>
+              <button class="radio-btn" id="action-skip">Skip</button>
+            </div>
+          </div>
+
+          <div id="include-options">
+            <div class="field-group">
+              <div class="field-label">AI Status</div>
+              <div class="field-row" id="ai-status-buttons">
+                <button class="radio-btn" data-value="native">AI Native</button>
+                <button class="radio-btn" data-value="enabled">Has AI Features</button>
+                <button class="radio-btn" data-value="host">AI Host</button>
+                <button class="radio-btn" data-value="none">No AI</button>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">Signatures (auto-detected)</div>
+              <div class="signature-grid" id="signatures"></div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">Version</div>
+              <div id="app-version" style="font-family: 'SF Mono', monospace; font-size: 13px; color: var(--text-secondary);">-</div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-label">Known AI Providers (optional)</div>
+              <input type="text" class="field-input" id="providers-input" placeholder="e.g., openai, anthropic, google">
+            </div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-secondary" id="reset-btn">Reset</button>
+          <button class="btn btn-primary" id="save-btn">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export bar -->
+  <div class="export-bar">
+    <div class="export-info">
+      <strong id="export-count">0</strong> apps will be exported with icons
+    </div>
+    <button class="btn btn-success btn-large" id="export-btn">
+      Export ZIP
+    </button>
+    <a href="https://github.com/oximyhq/oisp-app-registry/upload/main/apps" target="_blank" class="btn btn-primary" id="upload-link">
+      Upload to GitHub
+    </a>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Apps data injected by the scan script
+    const DATA = __APPS_DATA__;
+
+    // State - by default ALL apps are included
+    let apps = DATA.apps || [];
+    let appStates = {}; // app_id -> { ai_status, providers, skipped }
+    let selectedAppId = null;
+    let currentFilter = 'all';
+
+    // Initialize all apps with default state (included, with detected AI status)
+    apps.forEach(app => {
+      appStates[app.app_id] = {
+        ai_status: app.is_ai_app ? 'native' : (app.is_ai_host ? 'host' : 'none'),
+        providers: '',
+        skipped: false
+      };
+    });
+
+    // DOM elements
+    const appsContainer = document.getElementById('apps-container');
+    const detailView = document.getElementById('detail-view');
+    const emptyState = document.getElementById('empty-state');
+    const searchInput = document.getElementById('search-input');
+    const toast = document.getElementById('toast');
+
+    // Initialize counts
+    updateCounts();
+
+    function updateCounts() {
+      const total = apps.length;
+      const skipped = apps.filter(a => appStates[a.app_id]?.skipped).length;
+      const included = total - skipped;
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('include-count').textContent = included;
+      document.getElementById('skipped-count').textContent = skipped;
+      document.getElementById('export-count').textContent = included;
+    }
+
+    function getAppIcon(app) {
+      if (app.icon_base64) {
+        return `<img src="data:image/png;base64,${app.icon_base64}" alt="">`;
+      }
+      return app.name.charAt(0).toUpperCase();
+    }
+
+    function getAiStatus(app) {
+      return appStates[app.app_id]?.ai_status || 'none';
+    }
+
+    function getStatusClass(status) {
+      const classes = {
+        'native': 'status-native',
+        'enabled': 'status-enabled',
+        'host': 'status-host',
+        'none': 'status-none'
+      };
+      return classes[status] || 'status-none';
+    }
+
+    function getStatusLabel(status) {
+      const labels = {
+        'native': 'Native',
+        'enabled': 'Has AI',
+        'host': 'Host',
+        'none': 'None'
+      };
+      return labels[status] || 'None';
+    }
+
+    function renderApps() {
+      const searchTerm = searchInput.value.toLowerCase();
+
+      let filtered = apps.filter(app => {
+        const state = appStates[app.app_id] || {};
+
+        // Search filter
+        if (searchTerm && !app.name.toLowerCase().includes(searchTerm)) {
+          return false;
+        }
+
+        // Category filter
+        if (currentFilter === 'ai') {
+          return state.ai_status && state.ai_status !== 'none';
+        }
+        if (currentFilter === 'included') {
+          return !state.skipped;
+        }
+        if (currentFilter === 'skipped') {
+          return state.skipped;
+        }
+
+        return true;
+      });
+
+      appsContainer.innerHTML = filtered.map(app => {
+        const state = appStates[app.app_id] || {};
+        const status = state.ai_status || 'none';
+        const isSkipped = state.skipped;
+        const isSelected = selectedAppId === app.app_id;
+
+        return `
+          <div class="app-item ${isSelected ? 'selected' : ''} ${isSkipped ? 'skipped' : ''}" data-app-id="${app.app_id}">
+            <div class="app-icon">${getAppIcon(app)}</div>
+            <div class="app-info">
+              <div class="app-name">${app.name}</div>
+              <div class="app-vendor">${app.vendor || 'Unknown vendor'}</div>
+            </div>
+            <span class="app-status ${isSkipped ? 'status-skipped' : getStatusClass(status)}">${isSkipped ? 'Skip' : getStatusLabel(status)}</span>
+          </div>
+        `;
+      }).join('');
+
+      updateCounts();
+    }
+
+    function selectApp(appId) {
+      selectedAppId = appId;
+      const app = apps.find(a => a.app_id === appId);
+      if (!app) return;
+
+      const state = appStates[appId] || {};
+
+      emptyState.style.display = 'none';
+      detailView.style.display = 'flex';
+
+      // Update header
+      document.getElementById('detail-icon').innerHTML = getAppIcon(app);
+      document.getElementById('detail-name').textContent = app.name;
+      document.getElementById('detail-vendor').textContent = app.vendor || 'Unknown vendor';
+
+      // Update include/skip buttons
+      const includeBtn = document.getElementById('action-include');
+      const skipBtn = document.getElementById('action-skip');
+      includeBtn.classList.toggle('selected', !state.skipped);
+      skipBtn.classList.toggle('selected', state.skipped);
+      skipBtn.classList.toggle('selected-skip', state.skipped);
+      document.getElementById('include-options').style.display = state.skipped ? 'none' : 'block';
+
+      // Update AI status buttons
+      const aiStatus = state.ai_status || 'none';
+      document.querySelectorAll('#ai-status-buttons .radio-btn').forEach(btn => {
+        btn.classList.toggle('selected', btn.dataset.value === aiStatus);
+      });
+
+      // Update signatures
+      const sigHtml = [];
+      if (app.macos) {
+        if (app.macos.bundle_id) sigHtml.push(`<span class="sig-label">Bundle ID</span><span class="sig-value">${app.macos.bundle_id}</span>`);
+        if (app.macos.team_id) sigHtml.push(`<span class="sig-label">Team ID</span><span class="sig-value">${app.macos.team_id}</span>`);
+      }
+      if (app.windows?.executable_name) {
+        sigHtml.push(`<span class="sig-label">Executable</span><span class="sig-value">${app.windows.executable_name}</span>`);
+      }
+      if (app.linux?.executable_name) {
+        sigHtml.push(`<span class="sig-label">Executable</span><span class="sig-value">${app.linux.executable_name}</span>`);
+      }
+      document.getElementById('signatures').innerHTML = sigHtml.join('') || '<span class="sig-value" style="grid-column: span 2;">No signatures detected</span>';
+
+      // Update version
+      const version = app.macos?.version || app.windows?.version || app.linux?.version || '-';
+      document.getElementById('app-version').textContent = version;
+
+      // Update providers
+      document.getElementById('providers-input').value = state.providers || '';
+
+      renderApps();
+    }
+
+    function saveChanges() {
+      if (!selectedAppId) return;
+
+      const state = appStates[selectedAppId] || {};
+      const aiStatus = document.querySelector('#ai-status-buttons .radio-btn.selected')?.dataset.value || 'none';
+      const providers = document.getElementById('providers-input').value.trim();
+
+      appStates[selectedAppId] = {
+        ...state,
+        ai_status: aiStatus,
+        providers: providers
+      };
+
+      showToast('Saved');
+      renderApps();
+    }
+
+    function resetApp() {
+      if (!selectedAppId) return;
+      const app = apps.find(a => a.app_id === selectedAppId);
+
+      appStates[selectedAppId] = {
+        ai_status: app.is_ai_app ? 'native' : (app.is_ai_host ? 'host' : 'none'),
+        providers: '',
+        skipped: false
+      };
+
+      selectApp(selectedAppId);
+      showToast('Reset');
+    }
+
+    function generateYaml(app) {
+      const state = appStates[app.app_id] || {};
+      const ai = state.ai_status || 'none';
+
+      let y = `id: ${app.app_id}\n`;
+      y += `name: ${app.name}\n`;
+      if (app.vendor) y += `vendor: ${app.vendor}\n`;
+      y += `ai: ${ai}\n\n`;
+
+      y += `signatures:\n`;
+      if (app.macos) {
+        y += `  macos:\n`;
+        if (app.macos.bundle_id) y += `    bundle_id: ${app.macos.bundle_id}\n`;
+        if (app.macos.team_id) y += `    team_id: ${app.macos.team_id}\n`;
+      }
+      if (app.windows) {
+        y += `  windows:\n`;
+        if (app.windows.executable_name) y += `    exe: ${app.windows.executable_name}\n`;
+      }
+      if (app.linux) {
+        y += `  linux:\n`;
+        if (app.linux.executable_name) y += `    exe: ${app.linux.executable_name}\n`;
+      }
+
+      if (state.providers) {
+        y += `\nproviders:\n`;
+        state.providers.split(',').map(p => p.trim()).filter(p => p).forEach(p => {
+          y += `  - ${p}\n`;
+        });
+      }
+
+      return y;
+    }
+
+    async function exportZip() {
+      const includedApps = apps.filter(a => !appStates[a.app_id]?.skipped);
+
+      if (includedApps.length === 0) {
+        showToast('No apps to export!');
+        return;
+      }
+
+      showToast('Creating ZIP...');
+
+      const zip = new JSZip();
+      const appsFolder = zip.folder('apps');
+      const iconsFolder = zip.folder('icons');
+
+      let iconCount = 0;
+
+      for (const app of includedApps) {
+        // Add YAML
+        const yaml = generateYaml(app);
+        appsFolder.file(`${app.app_id}.yaml`, yaml);
+
+        // Add icon if available
+        if (app.icon_base64) {
+          try {
+            const iconData = atob(app.icon_base64);
+            const iconArray = new Uint8Array(iconData.length);
+            for (let i = 0; i < iconData.length; i++) {
+              iconArray[i] = iconData.charCodeAt(i);
+            }
+            iconsFolder.file(`${app.app_id}.png`, iconArray);
+            iconCount++;
+          } catch (e) {
+            console.error('Failed to process icon for', app.app_id, e);
+          }
+        }
+      }
+
+      // Add a README for instructions
+      const readme = `# OISP App Registry Contribution
+
+This ZIP contains ${includedApps.length} app profiles and ${iconCount} icons.
+
+## Quick Submit (GitHub Web UI)
+
+1. Go to: https://github.com/oximyhq/oisp-app-registry/upload/main/apps
+2. Drag & drop all files from the \`apps/\` folder
+3. Click "Commit changes" -> "Propose changes" -> "Create pull request"
+4. Repeat for \`icons/\` folder at: https://github.com/oximyhq/oisp-app-registry/upload/main/icons
+
+## Notes
+
+- If an app already exists in the registry, your version will update it
+- Duplicate apps across PRs are handled by maintainers during review
+- The GitHub Actions will validate your YAML files automatically
+
+Thank you for contributing!
+`;
+      zip.file('README.md', readme);
+
+      // Generate and download
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'oisp-contribution.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast(`Downloaded! ${includedApps.length} apps + ${iconCount} icons`);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Event listeners
+    appsContainer.addEventListener('click', e => {
+      const item = e.target.closest('.app-item');
+      if (item) selectApp(item.dataset.appId);
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderApps();
+      });
+    });
+
+    searchInput.addEventListener('input', renderApps);
+
+    document.querySelectorAll('#ai-status-buttons .radio-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('#ai-status-buttons .radio-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+
+    // Include/Skip buttons
+    document.getElementById('action-include').addEventListener('click', () => {
+      if (!selectedAppId) return;
+      appStates[selectedAppId] = { ...appStates[selectedAppId], skipped: false };
+      selectApp(selectedAppId);
+    });
+
+    document.getElementById('action-skip').addEventListener('click', () => {
+      if (!selectedAppId) return;
+      appStates[selectedAppId] = { ...appStates[selectedAppId], skipped: true };
+      selectApp(selectedAppId);
+      showToast('App will be skipped');
+    });
+
+    document.getElementById('save-btn').addEventListener('click', saveChanges);
+    document.getElementById('reset-btn').addEventListener('click', resetApp);
+    document.getElementById('export-btn').addEventListener('click', exportZip);
+
+    // Initial render
+    renderApps();
+  </script>
+</body>
+</html>

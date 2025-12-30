@@ -1,93 +1,14 @@
-# Visual Studio Code - Code editor with AI extensions
-# https://code.visualstudio.com
-
-app_id: vscode
+id: vscode
 name: Visual Studio Code
 vendor: Microsoft
-category: dev_tools
-subcategory: ide
-description: Popular code editor that hosts various AI extensions including GitHub Copilot, Cody, Continue, and others.
-website: https://code.visualstudio.com
+ai: host
 
 signatures:
   macos:
-    bundle_id: "com.microsoft.VSCode"
-    team_id: "UBF8T346G9"
-    paths:
-      - "/Applications/Visual Studio Code.app"
-      - "~/Applications/Visual Studio Code.app"
-    executable_name: "Electron"
-    helper_bundles:
-      - "com.microsoft.VSCode.helper"
-      - "com.microsoft.VSCode.helper.GPU"
-      - "com.microsoft.VSCode.helper.Renderer"
-      - "com.microsoft.VSCode.helper.Plugin"
-
+    bundle_id: com.microsoft.VSCode
+    team_id: UBF8T346G9
   windows:
-    paths:
-      - "%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe"
-      - "%PROGRAMFILES%\\Microsoft VS Code\\Code.exe"
-      - "%PROGRAMFILES(X86)%\\Microsoft VS Code\\Code.exe"
-    executable_name: "Code.exe"
-    publisher: "Microsoft Corporation"
-    product_name: "Visual Studio Code"
-
+    exe: Code.exe
+    publisher: Microsoft Corporation
   linux:
-    paths:
-      - "/usr/share/code/code"
-      - "/usr/bin/code"
-      - "/snap/code/current/usr/share/code/code"
-      - "/opt/visual-studio-code/code"
-    executable_name: "code"
-    package_names:
-      - "code"
-      - "visual-studio-code"
-    snap_name: "code"
-    flatpak_id: "com.visualstudio.code"
-    desktop_file: "code.desktop"
-
-traffic_patterns:
-  type: hybrid
-  expected_providers:
-    - openai
-    - anthropic
-    - google
-  backend_domains:
-    - "api.githubcopilot.com"
-    - "vscode.dev"
-    - "*.vscode-cdn.net"
-  notes: |
-    VSCode itself doesn't make AI calls, but hosts extensions that do.
-    Traffic attribution should identify the specific extension.
-
-child_processes:
-  - name: "Code Helper"
-    path_pattern: "**/Visual Studio Code.app/**/Code Helper*"
-    role: renderer
-  - name: "extensionHost"
-    path_pattern: "**/Visual Studio Code.app/**/extensionHost*"
-    role: extension_host
-  - name: "node"
-    path_pattern: "**/Visual Studio Code.app/**/node"
-    role: runtime
-
-metadata:
-  first_release: "2015-04-29"
-  ai_features_added: "2021-06-29"
-  open_source: true
-  license: MIT
-  pricing: free
-
-notes: |
-  VSCode is a platform that hosts AI extensions. The main AI-enabled extensions include:
-  - GitHub Copilot (github.copilot)
-  - Cody (sourcegraph.cody-ai)
-  - Continue (continue.continue)
-  - Tabnine (tabnine.tabnine-vscode)
-  - Amazon CodeWhisperer (amazonwebservices.codewhisperer)
-
-  When an AI request is made, it typically comes from a child process (node running
-  the extension or the extension host). Attribution should walk up to VSCode and
-  ideally identify which extension made the request.
-
-last_verified: "2025-01-15"
+    exe: code
