@@ -1,0 +1,50 @@
+# Compiled source #
+###################
+target/
+**/target/
+
+# Rust package manager #
+########################
+Cargo.lock
+
+# IntelliJ / JetBrains #
+########################
+.idea/
+*.iml
+
+# Editors #
+###########
+*.swp
+*.swo
+
+# macOS #
+#########
+.DS_Store
+
+# VSCode #
+##########
+.vscode/
+*.code-workspace
+
+# Byebug / Pry / IRB temp files #
+#################################
+*.bak
+
+# Node & npm (in case JS tools sneak in) #
+##########################################
+node_modules/
+
+# Logs and temp files #
+######################
+*.log
+*.tmp
+
+# dotenv files #
+################
+.env
+.env.*
+
+# Coverage #
+############
+coverage/
+
