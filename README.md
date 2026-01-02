@@ -1,4 +1,10 @@
-# OISP App Registry
+<p align="center">
+  <a href="https://sensor.oximy.com">
+    <img src="https://raw.githubusercontent.com/oximyhq/oisp-app-registry/main/assets/banner.png" alt="OISP App Registry" width="100%">
+  </a>
+</p>
+
+---
 
 Community-driven registry of AI-enabled applications.
 
